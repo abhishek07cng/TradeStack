@@ -2,9 +2,9 @@ const {schema} = require('mongoose');
 
 const OrderSchema = new schema({
     name: String,
+    qty : Number,
     price: Number,
-    percent: String,
-    isDown: Boolean,
+    mode: String,
 })
 
 module.exports = OrderSchema;
