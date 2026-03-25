@@ -2,6 +2,9 @@ require("dotenv").config();
 
 const { HoldingModel } = require("./models/HoldingModel");
 const { PositionModel} = require("./models/PositionModel");
+const { OrderModel } = require("./models/OrderModel");
+const cors = require("cors") ;
+const bodyParser = require("body-parser") ;
 
 const express = require("express");
 const mongoose = require("mongoose");
@@ -9,7 +12,12 @@ const mongoose = require("mongoose");
 const PORT = process.env.PORT || 3002;
 const uri = process.env.MONGO_URL;
 
+
 const app = express();
+
+app.use(cors()) ;
+app.use(bodyParser.json()) ;
+
 
 // app.get("/addHoldings", (req, res) => {
 //   let tempHoldings = [
@@ -177,8 +185,25 @@ const app = express();
 // });
 
 
+app.get("/allHoldings", async(req, res) => {
+  let allHoldings = await HoldingModel.find({}) ;
+  res.json(allHoldings);
+})
+app.get("/allPositions", async(req, res) => {
+  let allPositions = await PositionModel.find({}) ;
+  res.json(allPositions);
+})
 
-
+app.post("/newOrder", async(req, res) => {
+  let newOrder = await new OrderModel({
+    name: req.body.name,
+    qty: req.body.qty,
+    price: req.body.price,
+    mode: req.body.mode,
+  })
+  newOrder.save() ;
+  res.send("Order placed successfully");
+})
 app.listen(PORT, () => {
   console.log("App is running");
   mongoose.connect(uri);
