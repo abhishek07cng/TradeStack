@@ -1,22 +1,34 @@
 require("dotenv").config();
 
+const express = require("express");
+const mongoose = require("mongoose");
 const { HoldingModel } = require("./models/HoldingModel");
 const { PositionModel} = require("./models/PositionModel");
 const { OrderModel } = require("./models/OrderModel");
+const cookieParser = require("cookie-parser");
+const authRoute = require("./routes/AuthRoutes");
 const cors = require("cors") ;
-const bodyParser = require("body-parser") ;
 
-const express = require("express");
-const mongoose = require("mongoose");
+
 
 const PORT = process.env.PORT || 3002;
 const uri = process.env.MONGO_URL;
 
 
 const app = express();
+//middleware
+app.use(
+  cors({
+    origin: ["http://localhost:3001", "http://localhost:3000"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
-app.use(cors()) ;
-app.use(bodyParser.json()) ;
+app.use(express.json());
+app.use(cookieParser());
+
+app.use("/", authRoute);
 
 
 // app.get("/addHoldings", (req, res) => {
@@ -204,8 +216,15 @@ app.post("/newOrder", async(req, res) => {
   newOrder.save() ;
   res.send("Order placed successfully");
 })
-app.listen(PORT, () => {
-  console.log("App is running");
-  mongoose.connect(uri);
-  console.log("DB connected");
-});
+
+// DB + Server
+mongoose.connect(uri)
+  .then(() => {
+    console.log("DB connected");
+    app.listen(PORT, () => {
+      console.log("Server running on port", PORT);
+    });
+  })
+  .catch(err => console.error(err));
+
+
